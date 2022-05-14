@@ -1,0 +1,6 @@
+&i2c0 {
+
+    zephyr,concat-buf-size = <32>;
+    zephyr,flash-buf-max-size = <32>;
+    
+};
