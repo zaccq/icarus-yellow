@@ -46,6 +46,16 @@ enum t_axisOrder {
 #define CONSTRAIN(x, a, b) (MIN(MAX(x, a), b))
 #endif
 
+#define BSR(a, b) \
+        (((a) < 0) ?\
+        ((((a) * -1) >> (b)) * -1) :\
+        ((a) >> (b)))
+
+#define BSR31_8(a) (int8_t)(BSR(a, 23) & 0xff)
+#define BSR16_8(a) (int8_t)(BSR(a, 8) & 0xff)
+#define BSR31_12(a) (int16_t)(BSR(a, 19) & 0xfff)
+#define BSR31_16(a) (int16_t)(BSR(a, 15) & 0xffff)
+
 #ifndef PI
 #define PI 3.14159265358979f
 #endif
@@ -53,13 +63,18 @@ enum t_axisOrder {
 #define MPU9250_VDD_PWR_CTRL_INIT_PRIORITY 85
 #define MAX_DMP_SAMPLE_RATE 200
 
+#define INT_ACTIVE_HIGH 0
+#define INT_ACTIVE_LOW  1
+#define INT_LATCHED     1
+#define INT_50US_PULSE  0
+
 LOG_MODULE_REGISTER(lib_mpu9250_log, LOG_LEVEL_DBG);
 
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int16_t mx, my, mz;
-long qw, qx, qy, qz;
-long temperature;
+int32_t qw, qx, qy, qz;
+int32_t temperature;
 unsigned long time;
 float pitch, roll, yaw;
 float heading;
@@ -166,31 +181,26 @@ int mobile_mpu9250_init(struct mpu9250_sens_cfg* sensor_cfg,
 
     printk("MPU9250 initialisation successful!\n");
     
-    // Place all slaves (including compass) on primary bus
-    if(mpu_set_bypass(1)) {
+    // Place all sensors on primary bus
+    if (mpu_set_bypass(1)) {
         printk("Setting MPU9250 bypass mode failed!");
         return -4;
     }
 
-    if(mpu_set_sensors(sensor_cfg->feat_mask)) {
+    if (mpu_set_sensors(sensor_cfg->feat_mask)) {
         printk("Enabling Sensors failed!");
         return -5;
     }
-
-    /*if(mpu_configure_fifo(sensor_cfg->feat_mask)) {
-        printk("Enabling Sensors failed!");
-        return -6;
-    }*/
     
     gyro_sens = get_gyro_sens();
     accel_sens = get_accel_sens();
 
-    if(mpu9250_set_gyro_fsr(sensor_cfg->gyro_fsr)) {
+    if (mpu9250_set_gyro_fsr(sensor_cfg->gyro_fsr)) {
         printk("Setting Gyro FSR failed!");
         return -7;
     }
 
-    if(mpu9250_set_accel_fsr(sensor_cfg->accel_fsr)) {
+    if (mpu9250_set_accel_fsr(sensor_cfg->accel_fsr)) {
         printk("Setting Accelerometer FSR failed!");
         return -8;
     }
@@ -198,9 +208,18 @@ int mobile_mpu9250_init(struct mpu9250_sens_cfg* sensor_cfg,
     //mpu_set_sample_rate(CONSTRAIN(sensor_cfg->sample_rate, 4, 1000));
     //mpu_set_compass_sample_rate(CONSTRAIN(sensor_cfg->sample_rate, 1, 100));
 
-    if(dmp_init(dmp_cfg->feat_mask, dmp_cfg->sample_rate)) {
+    if (dmp_init(dmp_cfg->feat_mask, dmp_cfg->sample_rate)) {
         printk("MPU9250 dmp initialisation unsuccessful!");
         return -9;
+    }
+
+    if (set_int_enable(1) ||
+            mpu_set_int_level(INT_ACTIVE_LOW) ||
+            mpu_set_int_latched(INT_LATCHED)) {
+        
+        printk("MPU9250 interrupt configuration unsuccessful!");
+        return -10;
+
     }
 
     printk("MPU9250 dmp initialisation successful!");
@@ -327,12 +346,15 @@ void print_imu_data() {
     float g_y = calc_gyro(gy);
     float g_z = calc_gyro(gz);
 
-    printk("G_r xyz: %d, %d, %d\n", gx, gy, gz);
-    printk("A_r xyz: %d, %d, %d\n", ax, ay, az);
-    printk("Q_r: %ld, %ld, %ld, %ld\n", qw, qx, qy, qz);
-    printk("Q: %.4f, %.4f, %.4f, %.4f\n", q0, q1, q2, q3);
-    printk("A xyz: %.4f, %.4f, %.4f\n", a_x, a_y, a_z);
-    printk("G xyz: %.4f, %.4f, %.4f\n\n", g_x, g_y, g_z);
+    uint16_t gyro_fsr = 0;
+    uint8_t accel_fsr = 0;
+    mpu_get_accel_fsr(&accel_fsr);
+    mpu_get_gyro_fsr(&gyro_fsr);
+
+    printk("Sens_ag: %d, %d\n", accel_fsr/2, gyro_fsr/250);
+    printk("G_s_xyz: %d, %d, %d\n", BSR16_8(gx), BSR16_8(gy), BSR16_8(gz));
+    printk("A_s_xyz: %d, %d, %d\n", BSR16_8(ax), BSR16_8(ay), BSR16_8(az));
+    printk("Q_s_xyz: %d, %d, %d, %d\n", BSR31_8(qw), BSR31_8(qx), BSR31_8(qy), BSR31_8(qz));
 
 }
 

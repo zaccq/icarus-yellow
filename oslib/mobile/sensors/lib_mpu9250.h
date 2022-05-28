@@ -14,6 +14,13 @@ struct mpu9250_dmp_cfg {
     uint8_t sample_rate;
 };
 
+struct mpu9250_reading {
+    int8_t accel_xyz[3];
+    int8_t gyro_xyz[3];
+    int8_t magn_xyz[3];
+    int8_t quat_wxyz[4];
+}
+
 int mobile_mpu9250_init(struct mpu9250_sens_cfg* sensor_cfg,
         struct mpu9250_dmp_cfg* dmp_cfg);
 uint8_t fifo_available();
