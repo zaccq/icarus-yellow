@@ -42,8 +42,7 @@ typedef enum {
     ble_ccs811_co2 = 14,
     ble_rssi = 15,
     ble_ultra = 16,
-    ble_steps = 17,
-    ble_quart = 18
+    ble_mpu9250 = 17
 } ble_ctrl_dest_t;
 
 typedef enum {

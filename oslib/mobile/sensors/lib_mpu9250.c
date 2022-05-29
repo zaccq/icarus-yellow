@@ -13,6 +13,7 @@
 #include "inv_mpu_dmp_motion_driver.h"
 #include "mpu9250_registers.h"
 #include "lib_mpu9250.h"
+#include "scu_ble.h"
 
 struct mpu9250_config {
     const struct i2c_dt_spec i2c;
@@ -355,6 +356,83 @@ void print_imu_data() {
     printk("G_s_xyz: %d, %d, %d\n", BSR16_8(gx), BSR16_8(gy), BSR16_8(gz));
     printk("A_s_xyz: %d, %d, %d\n", BSR16_8(ax), BSR16_8(ay), BSR16_8(az));
     printk("Q_s_xyz: %d, %d, %d, %d\n", BSR31_8(qw), BSR31_8(qx), BSR31_8(qy), BSR31_8(qz));
+
+}
+
+void mpu9250_get_sample(struct mpu9250_sample* sample) {
+    sample->accel_xyz[0] = BSR16_8(ax);
+    sample->accel_xyz[1] = BSR16_8(ay);
+    sample->accel_xyz[2] = BSR16_8(az);
+    sample->gyro_xyz[0] = BSR16_8(gx);
+    sample->gyro_xyz[1] = BSR16_8(gy);
+    sample->gyro_xyz[2] = BSR16_8(gz);
+    //sample->magn_xyz[0] = BSR16_8(mx);
+    //sample->magn_xyz[1] = BSR16_8(my);
+    //sample->magn_xyz[2] = BSR16_8(mz);
+    sample->quat_wxyz[0] = BSR31_8(qw);
+    sample->quat_wxyz[1] = BSR31_8(qx);
+    sample->quat_wxyz[2] = BSR31_8(qy);
+    sample->quat_wxyz[3] = BSR31_8(qz);
+    uint16_t gyro_fsr, magn_fsr = 0;
+    uint8_t accel_fsr = 0;
+    mpu_get_accel_fsr(&accel_fsr);
+    mpu_get_gyro_fsr(&gyro_fsr);
+    sample->fsr_ag[0] = accel_fsr/2;
+    sample->fsr_ag[1] = gyro_fsr/250;
+}
+
+void mpu9250_print_sample(struct mpu9250_sample* sample) {
+
+    printk("Sens_ag: %d, %d\n", sample->fsr_ag[0], sample->fsr_ag[1]);
+
+    printk("G_s_xyz: %d, %d, %d\n",
+            sample->accel_xyz[0],
+            sample->accel_xyz[1],
+            sample->accel_xyz[2]);
+    
+    printk("G_s_xyz: %d, %d, %d\n",
+            sample->gyro_xyz[0],
+            sample->gyro_xyz[1],
+            sample->gyro_xyz[2]);
+    
+    printk("Q_s_xyz: %d, %d, %d, %d\n", 
+            sample->quat_wxyz[0],
+            sample->quat_wxyz[1],
+            sample->quat_wxyz[2],
+            sample->quat_wxyz[3]);
+    
+}
+
+void mpu9250_format_notify_msg(struct packet* msg, struct mpu9250_sample* sample) {
+
+    uint8_t cursor = 0;
+    msg->preamble = 0xAA;
+    msg->type = 2;
+    msg->dest = 17;
+
+    for (uint8_t i = 0; i < 2; i++) {
+        msg->payload[cursor++] = sample->fsr_ag[i];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        msg->payload[cursor++] = sample->accel_xyz[i];
+    }
+
+    for (uint8_t i = 0; i < 3; i++) {
+        msg->payload[cursor++] = sample->gyro_xyz[i];
+    }
+
+    for (uint8_t i = 0; i < 4; i++) {
+        msg->payload[cursor++] = sample->quat_wxyz[i];
+    }
+
+    msg->len = 12;
+
+    // for use if we choose to add the magnetometer
+    //for (uint8_t i = 0; i < 3; i++) {
+    //    msg->payload[cursor++] = sample->magn_xyz[i];
+    //}
+    // data.len = 15;
 
 }
 

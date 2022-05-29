@@ -14,6 +14,8 @@
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h"
 #include "mpu9250_registers.h"
+#include "scu_ble.h"
+
 
 #define MPU9250_THREAD_PRIORITY 4
 #define MPU9250_THREAD_STACK_SIZE 2048
@@ -57,7 +59,15 @@ void tsk_mpu9250_entry_point(void *a, void *b, void *c) {
 
     while (1) {
         if ( fifo_available() && dmp_update_fifo() == INV_SUCCESS) {
-            print_imu_data();
+            struct mpu9250_sample sample;
+            
+            mpu9250_get_sample(&sample);
+            mpu9250_print_sample(&sample);
+            if (ble_connected()) {
+                struct packet msg;
+                mpu9250_format_notify_msg(&msg, &sample);
+                k_msgq_put(&notify_msgq, &msg, K_NO_WAIT);
+			}
         }
         k_msleep(50);
     }

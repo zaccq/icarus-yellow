@@ -92,7 +92,7 @@ static struct bt_uuid_128 hci_client_write = BT_UUID_INIT_128(
 
 static uint8_t simulate_vnd;
 
-static bool ble_connected = false;
+bool ble_connected_flag = false;
 
 // Functions Created
 
@@ -169,6 +169,9 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 	.disconnected = disconnected,
 };
 
+inline bool ble_connected() {
+    return ble_connected_flag;
+}
 
 /**
  * @brief Encodes the message for the the scu to use in 
@@ -320,13 +323,13 @@ static void connected(struct bt_conn *conn, uint8_t err) {
 	if (err) {
 		LOG_ERR("Connection failed (err 0x%02x)", err);
 	} else {
-        ble_connected = true;
+        ble_connected_flag = true;
 		LOG_INF("Connected\n");
 	}
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason) {
-    ble_connected = false;
+    ble_connected_flag = false;
 	LOG_INF("Disconnected (reason 0x%02x)", reason);
 }
 
@@ -430,7 +433,7 @@ void scu_ble_thread(void) {
 
 		if (k_msgq_get(&scu_msg_to_ahu, &data, K_FOREVER) == 0) {
 			LOG_DBG("Got here"); // debugging purposes
-			if (ble_connected) {
+			if (ble_connected()) {
                 k_msgq_put(&notify_msgq, &data, K_NO_WAIT);
 			}
         }
@@ -507,7 +510,7 @@ static inline void send_ultra(const bt_addr_t* addr, uint8_t* buf) {
 static void ble_device_found_callback(const bt_addr_le_t *addr, int8_t rssi,
         uint8_t adv_type, struct net_buf_simple *adv) {
 
-    if (ble_connected) {
+    if (ble_connected()) {
 
         send_rssi(&addr->a, rssi);
         if(adv->len >= 3 && adv->data[1] == 0x2f) {

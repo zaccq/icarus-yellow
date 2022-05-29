@@ -16,8 +16,10 @@ struct packet {
 };
 
 extern void scu_ble_init(void);
+bool ble_connected();
 
 extern struct k_msgq ahu_msg_to_scu;
 extern struct k_msgq scu_msg_to_ahu;
+extern struct k_msgq notify_msgq;
 
 #endif
