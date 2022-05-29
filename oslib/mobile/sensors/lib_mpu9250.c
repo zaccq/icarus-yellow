@@ -93,12 +93,12 @@ static inline int mpu9250_set_gyro_fsr(uint16_t gyro_fsr);
 static inline int mpu9250_set_accel_fsr(uint8_t accel_fsr);
 
 int mpu9250_i2c_write(unsigned char dev_addr, unsigned char reg_addr,
-                      unsigned char length, unsigned char * data) {
+        unsigned char length, unsigned char * data) {
     return i2c_burst_write(mpu9250_i2c_dev, dev_addr, reg_addr, data, length);
 }
 
 int mpu9250_i2c_read(unsigned char dev_addr, unsigned char reg_addr,
-                       unsigned char length, unsigned char * data) {
+        unsigned char length, unsigned char * data) {
     return i2c_burst_read(mpu9250_i2c_dev, dev_addr, reg_addr, data, length);
 }
 
@@ -328,35 +328,6 @@ static inline float calc_gyro(int axis) {
 
 static inline float calc_magn(int axis) {
     return (float) axis / (float) magn_sens;
-}
-
-void print_imu_data() {
-    // After calling dmpUpdateFifo() the ax, gx, mx, etc. values
-    // are all updated.
-    // Quaternion values are, by default, stored in Q30 long
-    // format. calcQuat turns them into a float between -1 and 1
-    float q0 = calc_quat(qw);
-    float q1 = calc_quat(qx);
-    float q2 = calc_quat(qy);
-    float q3 = calc_quat(qz);
-
-    float a_x = calc_accel(ax);
-    float a_y = calc_accel(ay);
-    float a_z = calc_accel(az);
-    float g_x = calc_gyro(gx);
-    float g_y = calc_gyro(gy);
-    float g_z = calc_gyro(gz);
-
-    uint16_t gyro_fsr = 0;
-    uint8_t accel_fsr = 0;
-    mpu_get_accel_fsr(&accel_fsr);
-    mpu_get_gyro_fsr(&gyro_fsr);
-
-    printk("Sens_ag: %d, %d\n", accel_fsr/2, gyro_fsr/250);
-    printk("G_s_xyz: %d, %d, %d\n", BSR16_8(gx), BSR16_8(gy), BSR16_8(gz));
-    printk("A_s_xyz: %d, %d, %d\n", BSR16_8(ax), BSR16_8(ay), BSR16_8(az));
-    printk("Q_s_xyz: %d, %d, %d, %d\n", BSR31_8(qw), BSR31_8(qx), BSR31_8(qy), BSR31_8(qz));
-
 }
 
 void mpu9250_get_sample(struct mpu9250_sample* sample) {
