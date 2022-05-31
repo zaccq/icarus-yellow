@@ -17,7 +17,7 @@
 #define JSON_DID
 
 
-LOG_MODULE_REGISTER(lib_hci_log_module, LOG_LEVEL_DBG);
+LOG_MODULE_REGISTER(lib_hci_log_module, LOG_LEVEL_WRN);
 
 uint8_t hci_encode_packet(ble_ctrl_request_packet_t* msg, char* buf,
         uint8_t buf_len) {
@@ -228,7 +228,7 @@ uint8_t hci_print_shell(char* data, hci_print_t type) {
 
     uint8_t err = hci_validate_packet(data);
     uint8_t length = (data[1] & 0xF) + HCI_HEADER_LEN;
-    char packet[19];
+    int8_t packet[19];
     memcpy(packet, data, length*sizeof(uint8_t));
     packet[length] = '\0';
     
@@ -266,6 +266,21 @@ uint8_t hci_print_shell(char* data, hci_print_t type) {
                         (*(uint64_t*)(packet+1)) >> 16, (uint8_t)packet[9],
                         *((uint64_t*)(packet+10)));
             
+            } else if (packet[2] == ble_mpu9250) {
+
+                LOG_WRN("packet: %#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,"
+                "%#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,%#02hhx,"
+                "%#02hhx,%#02hhx,%#02hhx,%#02hhx",
+                packet[0],packet[1],packet[2],packet[3],packet[4],
+                packet[5],packet[6],packet[7],packet[8],
+                packet[9],packet[10],packet[11],packet[12],
+                packet[13],packet[14],packet[15],packet[16],packet[17]);
+
+                shell_print(shell_backend_uart_get_ptr(),
+                "%%%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                packet[3], packet[4], packet[5], packet[6], packet[7],
+                packet[8], packet[9], packet[10], packet[11], packet[12],
+                packet[13], packet[14]);
             } else {
                 printk("%s: %s %s\n", name_buf, packet + 3, unit_buf);
             }

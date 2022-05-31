@@ -397,7 +397,15 @@ void mpu9250_format_notify_msg(struct packet* msg, struct mpu9250_sample* sample
         msg->payload[cursor++] = sample->quat_wxyz[i];
     }
 
-    msg->len = 12;
+    msg->len = 13;
+
+    // char* buffer = msg->payload;
+    // LOG_WRN("buffer: %#02x,%#02x,%#02x,%#02x,%#02x,%#02x,"
+    //         "%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x,%#02x",
+    //         buffer[0],buffer[1],buffer[2],buffer[3],buffer[4],
+    //         buffer[5],buffer[6],buffer[7],buffer[8],
+    //         buffer[9],buffer[10],buffer[11],buffer[12],
+    //         buffer[13],buffer[14],buffer[15],buffer[16],buffer[17]);
 
     // for use if we choose to add the magnetometer
     //for (uint8_t i = 0; i < 3; i++) {
