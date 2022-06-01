@@ -61,13 +61,45 @@ def loop(prompt, f: io.TextIOWrapper, ser: serial.Serial):
         est = number_rexp.sub('', c.predict_classification(out_data))
         print(est)  # print out the classification
 
+        # Send to the dashboard - Activity
+        # classify_activity = {
+        #     'variable': 'activity',
+        #     'unit': 'movement',
+        #     'value': est
+        # }
+        # dash.send_data(classify_activity)
+
         # Send to the dashboard
-        classify_activity = {
-            'variable': 'activity',
-            'unit': 'movement',
-            'value': est
-        }
-        dash.send_data(classify_activity)
+        classify_activity = [{'variable': 'activity', 'unit': 'movement', 'value': est}]
+        tagio_data_a_avgs = [{'variable': 'a_avg' + str(i), 'unit': 'm/s^2', 'value': str(round(avg, 2))} for i, avg in
+                             enumerate(means[:3])]
+        tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
+                               i, stdev in enumerate([*stdevs[:3], [stdevs[6]]])]
+        tagio_data_g_avgs = [{'variable': 'g_avg' + str(0), 'unit': 'm/s^2', 'value': str(round(means[7], 2))}]
+        tagio_data_g_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
+                               i, stdev in enumerate([*stdevs[3:6], [stdevs[7]]])]
+        tagio_data = [*classify_activity * tagio_data_a_avgs, *tagio_data_a_stdevs, *tagio_data_g_avgs,
+                      *tagio_data_g_stdevs]
+        dash.send_data(tagio_data)
+
+        # # Might be slow so change to for loop
+        # # Send to the dashboard - Values
+        # dash.send_data(dash.send_accel_data(out_data[0], 'ax'))
+        # dash.send_data(dash.send_accel_data(out_data[1], 'ay'))
+        # dash.send_data(dash.send_accel_data(out_data[2], 'az'))
+        #
+        # dash.send_data(dash.send_gyro_data(out_data[3], 'gmag'))
+        #
+        # dash.send_data(dash.send_accel_data(out_data[4], 'stdax'))
+        # dash.send_data(dash.send_accel_data(out_data[5], 'stday'))
+        # dash.send_data(dash.send_accel_data(out_data[6], 'stdaz'))
+        #
+        # dash.send_data(dash.send_gyro_data(out_data[7], 'stdgx'))
+        # dash.send_data(dash.send_gyro_data(out_data[8], 'stdgy'))
+        # dash.send_data(dash.send_gyro_data(out_data[9], 'stdgz'))
+        #
+        # dash.send_data(dash.send_accel_data(out_data[10], 'stdamag'))
+        # dash.send_data(dash.send_gyro_data(out_data[11], 'stdgmag'))
 
         frame = []
 

@@ -100,15 +100,3 @@ class Classifier:
         output_values = [row[-1] for row in neighbours]
         prediction = max(set(output_values), key=output_values.count)
         return self.lookup[prediction]
-
-    #def compute_knn(file_name, row):
-        #dataset = load_csv(file_name)
-        #for i in range(len(dataset[0]) - 1):
-            #str_column_to_float(dataset, i)
-        ## convert class column to integers
-        #str_column_to_int(dataset, len(dataset[0]) - 1)
-        ## define model parameter
-        #num_neighbors = 1
-        ## predict the label
-        #label = predict_classification(dataset, row, num_neighbors)
-        #print('Data= %s, Predicted: %s' % (row, label))
