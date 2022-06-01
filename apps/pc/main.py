@@ -8,6 +8,7 @@ import csv
 import numpy as np
 
 ansi_escape = re.compile(r'(?:\x1B[@-Z\\-_]|[\x80-\x9A\x9C-\x9F]|(?:\x1B\[|\x9B)[0-?]*[ -/]*[@-~])')
+number_rexp = re.compile(r'(?:[0-9]+)')
 base_sens = [2.0, 250.0]
 
 
@@ -57,7 +58,7 @@ def loop(prompt, f: io.TextIOWrapper, ser: serial.Serial):
         stdevs = [round(np.std(sensor), 4) for sensor in frame]
 
         out_data = [*means[:3], *[means[-1]], *stdevs]
-        est = c.predict_classification(out_data)
+        est = number_rexp.sub('', c.predict_classification(out_data))
         print(est)  # print out the classification
 
         # Send to the dashboard
