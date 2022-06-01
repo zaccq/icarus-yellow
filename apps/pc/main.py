@@ -65,9 +65,9 @@ def loop(prompt, f: io.TextIOWrapper, ser: serial.Serial):
         classify_activity = [{'variable': 'activity', 'unit': 'movement', 'value': est}]
         tagio_data_a_avgs = [{'variable': 'a_avg' + str(i), 'unit': 'm/s^2', 'value': str(round(avg, 2))} for i, avg in
                              enumerate(means[:3])]
-        tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'dps', 'value': str(round(stdev, 2))} for
+        tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
                                i, stdev in enumerate([*stdevs[:3], *[stdevs[6]]])]
-        tagio_data_g_avgs = [{'variable': 'g_avg' + str(0), 'unit': 'm/s^2', 'value': str(round(means[7], 2))}]
+        tagio_data_g_avgs = [{'variable': 'g_avg' + str(0), 'unit': 'dps', 'value': str(round(means[7], 2))}]
         tagio_data_g_stdevs = [{'variable': 'g_stdev' + str(i), 'unit': 'dps', 'value': str(round(stdev, 2))} for
                                i, stdev in enumerate([*stdevs[3:6], *[stdevs[7]]])]
         tagio_data = [*classify_activity, *tagio_data_a_avgs, *tagio_data_a_stdevs, *tagio_data_g_avgs,
