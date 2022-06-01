@@ -67,4 +67,5 @@ _deps
 
 #ignore build directory
 build/
+venv/
 *.zip
