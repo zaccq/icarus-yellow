@@ -68,8 +68,6 @@ _deps
 #ignore build directory
 build/
 venv/
-.DS_Store
-.idea/
 *.zip
 .DS_Store
 .idea/
