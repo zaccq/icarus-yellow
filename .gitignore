@@ -71,3 +71,6 @@ venv/
 .DS_Store
 .idea/
 *.zip
+.DS_Store
+.idea/
+__pycache__/
