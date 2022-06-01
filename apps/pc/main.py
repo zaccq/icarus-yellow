@@ -62,7 +62,8 @@ def loop(prompt, f: io.TextIOWrapper, ser: serial.Serial):
         print(est)  # print out the classification
 
         # Send to the dashboard
-        classify_activity = [{'variable': 'activity', 'unit': 'movement', 'value': est}]
+        #classify_activity = [{'variable': 'activity', 'unit': 'movement', 'value': est}]
+        classify_activity = [{'variable': 'activity', 'value': est}]
         tagio_data_a_avgs = [{'variable': 'a_avg' + str(i), 'unit': 'm/s^2', 'value': str(round(avg, 2))} for i, avg in
                              enumerate(means[:3])]
         tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
