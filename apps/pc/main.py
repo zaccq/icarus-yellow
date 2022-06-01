@@ -61,45 +61,18 @@ def loop(prompt, f: io.TextIOWrapper, ser: serial.Serial):
         est = number_rexp.sub('', c.predict_classification(out_data))
         print(est)  # print out the classification
 
-        # Send to the dashboard - Activity
-        # classify_activity = {
-        #     'variable': 'activity',
-        #     'unit': 'movement',
-        #     'value': est
-        # }
-        # dash.send_data(classify_activity)
-
         # Send to the dashboard
         classify_activity = [{'variable': 'activity', 'unit': 'movement', 'value': est}]
         tagio_data_a_avgs = [{'variable': 'a_avg' + str(i), 'unit': 'm/s^2', 'value': str(round(avg, 2))} for i, avg in
                              enumerate(means[:3])]
-        tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
-                               i, stdev in enumerate([*stdevs[:3], [stdevs[6]]])]
+        tagio_data_a_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'dps', 'value': str(round(stdev, 2))} for
+                               i, stdev in enumerate([*stdevs[:3], *[stdevs[6]]])]
         tagio_data_g_avgs = [{'variable': 'g_avg' + str(0), 'unit': 'm/s^2', 'value': str(round(means[7], 2))}]
-        tagio_data_g_stdevs = [{'variable': 'a_stdev' + str(i), 'unit': 'm/s^2', 'value': str(round(stdev, 2))} for
-                               i, stdev in enumerate([*stdevs[3:6], [stdevs[7]]])]
-        tagio_data = [*classify_activity * tagio_data_a_avgs, *tagio_data_a_stdevs, *tagio_data_g_avgs,
+        tagio_data_g_stdevs = [{'variable': 'g_stdev' + str(i), 'unit': 'dps', 'value': str(round(stdev, 2))} for
+                               i, stdev in enumerate([*stdevs[3:6], *[stdevs[7]]])]
+        tagio_data = [*classify_activity, *tagio_data_a_avgs, *tagio_data_a_stdevs, *tagio_data_g_avgs,
                       *tagio_data_g_stdevs]
         dash.send_data(tagio_data)
-
-        # # Might be slow so change to for loop
-        # # Send to the dashboard - Values
-        # dash.send_data(dash.send_accel_data(out_data[0], 'ax'))
-        # dash.send_data(dash.send_accel_data(out_data[1], 'ay'))
-        # dash.send_data(dash.send_accel_data(out_data[2], 'az'))
-        #
-        # dash.send_data(dash.send_gyro_data(out_data[3], 'gmag'))
-        #
-        # dash.send_data(dash.send_accel_data(out_data[4], 'stdax'))
-        # dash.send_data(dash.send_accel_data(out_data[5], 'stday'))
-        # dash.send_data(dash.send_accel_data(out_data[6], 'stdaz'))
-        #
-        # dash.send_data(dash.send_gyro_data(out_data[7], 'stdgx'))
-        # dash.send_data(dash.send_gyro_data(out_data[8], 'stdgy'))
-        # dash.send_data(dash.send_gyro_data(out_data[9], 'stdgz'))
-        #
-        # dash.send_data(dash.send_accel_data(out_data[10], 'stdamag'))
-        # dash.send_data(dash.send_gyro_data(out_data[11], 'stdgmag'))
 
         frame = []
 
@@ -123,22 +96,3 @@ if __name__ == '__main__':
     parser.add_argument('-om', action='store', dest='out_mode', required=False, default="a")
     args = parser.parse_args()
     main(args)
-    # dash.printInfo()
-    #
-    # testData = {
-    #     'variable': 'hmov',
-    #     'unit': 'cm',
-    #     'value': 30
-    # }
-    # dash.send_data(testData)
-    #
-    # fil = {
-    #     'variable': 'hmov',
-    #     'query': 'last_value',
-    # }
-    # dash.get_data(fil)
-
-    # we want to use knn
-    # file = 'knn_dataset.csv'
-    # row = [0.894779726, 0.366540055, 0.177406301, 1.339092879, 0.066174796, 0.063936819, 0.052950531, 1.994015052, 0.860659541, 0.206841843, 0.011416504, 1.727318415]
-    # knn.compute_knn(file, row)
