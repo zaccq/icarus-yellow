@@ -49,7 +49,7 @@ class Classifier:
 
     # Find the min and max values for each column
     def dataset_minmax(self):
-        local_dataset = [row[0:12] for row in self.dataset]
+        local_dataset = [row[0:-1] for row in self.dataset]
         minmax = list()
         for i in range(len(local_dataset[0])):
             col_values = [row[i] for row in local_dataset]
