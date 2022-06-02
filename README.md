@@ -43,10 +43,4 @@ The PC software communicates with a tago.io instance via HTTPS and the dongle vi
 
 The pc software is written in python, and may be executed by running `python main.py -t /dev/ttyACM0 -p "CSSE4011:~\$"` substituting the tty device that the dongle enumerates to for `/dev/ttyACM0` which is where the device tries to enumerate on linux. Mac users will need to identify the terminal by running `ls /dev/tty0.*`.
 
-## Extensibility
-
-With small changes to the mobile node code to have unique UUIDs, the system may be extended to have multiple mobile nodes active concurrently. As the bluetooth protocol in use is GATT, the dongle is not strictly necessary, and any programmable BLE capable device could be used instead to implement the same functionality. If the interface was changed from connection-based to scan-advertise based this would trivially allow multiple nodes to co-exist.
-
-The pc software is very simple but could be extended to multiple nodes by giving each node its own thread and classifier. The classification dataset is very easy to update only requiring some logged readings which can be taken by running main.py with the appropriate flags. The data that then needs to be extracted for this model is the absolute mean and standard-deviation of all three axes of the accelerometer, gyroscope, acceleration vector magnitude, and angular velocity vector magnitude. The absolute means for the gyroscope axes and the vector magnitude were not used in this model as they were always very close to (0,0,0) and 1 respectively but may be useful for other activities.
-
 [1]: <https://github.com/sparkfun/SparkFun_MPU-9250-DMP_Arduino_Library/>
